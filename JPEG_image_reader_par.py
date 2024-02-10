@@ -5,7 +5,7 @@ import math
 import time
 from io import BytesIO
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 import multiprocessing
 
 
@@ -16,12 +16,12 @@ class JPEGImageReader:
         self.images = manager.list()
 
     async def read_images(self, num_images=None) -> None:
-        print("Reading images...")
         image_files = os.listdir(self.directory)
         if num_images is not None:
             image_files = image_files[:num_images]
         loop = asyncio.get_running_loop()
-        with ThreadPoolExecutor() as pool:
+        print("Reading images...")
+        with ProcessPoolExecutor() as pool:
             tasks = []
             for filename in image_files:
                 if filename.lower().endswith('.jpg') or filename.lower().endswith('.jpeg'):
@@ -57,19 +57,49 @@ class JPEGImageReader:
         plt.setp(axes, xticks=[], yticks=[], frame_on=False)
         plt.show()
 
+    async def save_images(self, path) -> None:
+        os.makedirs(path, exist_ok=True)
+        output_path = os.path.join(path, "image")
+        loop = asyncio.get_running_loop()
+        print("Saving images...")
+        with ProcessPoolExecutor() as pool:
+            tasks = []
+            for i, image in enumerate(self.images):
+                image_path = output_path + str(i+1) + ".bmp"
+                task = loop.run_in_executor(pool, image.save, image_path)
+                tasks.append(task)
+            await asyncio.gather(*tasks)
+        print("Images saved.")
+
     def close_images(self) -> None:
         for image in self.images:
             image.close()
+
+
+def clean_directory(path):
+    for filename in os.listdir(path):
+        file_path = os.path.join(path, filename)
+        try:
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+        except Exception as e:
+            print(f"Error deleting {file_path}: {e}")
 
 
 async def main() -> None:
     directory_path = os.path.abspath("images")
     reader = JPEGImageReader(directory_path)
     start_time = time.time()
-    await reader.read_images(40000)
+    await reader.read_images(1000)
     execution_time = time.time() - start_time
     print("Time in seconds to read images: %s" % execution_time)
     #reader.show_images(100)
+    save_path = os.path.abspath("images_bmp")
+    clean_directory(save_path)
+    start_time = time.time()
+    await reader.save_images(save_path)
+    execution_time = time.time() - start_time
+    print("Time in seconds to save images: %s" % execution_time)
     reader.close_images()
 
 if __name__ == "__main__":
