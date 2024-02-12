@@ -8,6 +8,8 @@ import asyncio
 from concurrent.futures import ProcessPoolExecutor
 import multiprocessing
 
+INPUT_IMAGES_RELATIVE_PATH = "images"
+OUTPUT_IMAGES_RELATIVE_PATH = "images_bmp"
 IMAGES_NUMBER = 5000
 
 
@@ -91,14 +93,14 @@ def clean_directory(path) -> None:
 async def main() -> None:
     #logical_core_count = multiprocessing.cpu_count()
     #print("Number of logical cores:", logical_core_count)
-    directory_path = os.path.abspath("images")
+    directory_path = os.path.abspath(INPUT_IMAGES_RELATIVE_PATH)
     reader = JPEGImageReader(directory_path)
     start_time = time.time()
     await reader.read_images(IMAGES_NUMBER)
     execution_time = time.time() - start_time
     print("Time in seconds to read images: %s" % round(execution_time,5))
     #reader.show_images(100)
-    save_path = os.path.abspath("images_bmp")
+    save_path = os.path.abspath(OUTPUT_IMAGES_RELATIVE_PATH)
     clean_directory(save_path)
     start_time = time.time()
     await reader.save_images(save_path)

@@ -5,6 +5,8 @@ import math
 import time
 from io import BytesIO
 
+INPUT_IMAGES_RELATIVE_PATH = "images"
+OUTPUT_IMAGES_RELATIVE_PATH = "images_bmp"
 IMAGES_NUMBER = 5000
 
 
@@ -75,7 +77,7 @@ def clean_directory(path) -> None:
 
 
 if __name__ == "__main__":
-    directory_path = os.path.abspath("images")
+    directory_path = os.path.abspath(INPUT_IMAGES_RELATIVE_PATH)
     reader = JPEGImageReader(directory_path)
     start_time = time.time()
     reader.read_images(IMAGES_NUMBER)
@@ -85,7 +87,7 @@ if __name__ == "__main__":
     #for filename, image in all_images.items():
         #print(f"Filename: {filename}, Size: {image.size}")
     #reader.show_images(100)
-    save_path = os.path.abspath("images_bmp")
+    save_path = os.path.abspath(OUTPUT_IMAGES_RELATIVE_PATH)
     clean_directory(save_path)
     start_time = time.time()
     reader.save_images(save_path)
