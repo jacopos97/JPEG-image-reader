@@ -5,6 +5,8 @@ import math
 import time
 from io import BytesIO
 
+IMAGES_NUMBER = 5000
+
 
 class JPEGImageReader:
     def __init__(self, directory) -> None:
@@ -62,13 +64,12 @@ class JPEGImageReader:
             image.close()
 
 
-def clean_directory(path):
+def clean_directory(path) -> None:
     for filename in os.listdir(path):
         file_path = os.path.join(path, filename)
         try:
             if os.path.isfile(file_path):
                 os.remove(file_path)
-                #print(f"Deleted {file_path}")
         except Exception as e:
             print(f"Error deleting {file_path}: {e}")
 
@@ -77,9 +78,9 @@ if __name__ == "__main__":
     directory_path = os.path.abspath("images")
     reader = JPEGImageReader(directory_path)
     start_time = time.time()
-    reader.read_images(1000)
+    reader.read_images(IMAGES_NUMBER)
     execution_time = time.time() - start_time
-    print("Time in seconds to read images: %s" % execution_time)
+    print("Time in seconds to read images: %s" % round(execution_time,5))
     #all_images = reader.get_all_images()
     #for filename, image in all_images.items():
         #print(f"Filename: {filename}, Size: {image.size}")
@@ -89,5 +90,5 @@ if __name__ == "__main__":
     start_time = time.time()
     reader.save_images(save_path)
     execution_time = time.time() - start_time
-    print("Time in seconds to save images: %s" % execution_time)
+    print("Time in seconds to save images: %s" % round(execution_time,5))
     reader.close_images()
