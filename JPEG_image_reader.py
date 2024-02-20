@@ -17,7 +17,7 @@ class JPEGImageReader:
 
     def read_images(self, num_images=None) -> None:
         image_files = os.listdir(self.directory)
-        if num_images is not None:
+        if num_images is not None and num_images <= len(image_files):
             image_files = image_files[:num_images]
         print("Reading images...")
         for filename in image_files:
@@ -36,7 +36,7 @@ class JPEGImageReader:
         return self.images
 
     def show_images(self, num_images=None) -> None:
-        if num_images is None:
+        if num_images is None or num_images > len(self.images):
             num_images = len(self.images)
         sqrt = math.sqrt(num_images)
         if sqrt.is_integer():

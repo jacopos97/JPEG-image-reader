@@ -11,21 +11,23 @@ import multiprocessing
 INPUT_IMAGES_RELATIVE_PATH = "images"
 OUTPUT_IMAGES_RELATIVE_PATH = "images_bmp"
 IMAGES_NUMBER = 5000
+NUM_WORKERS = 10
 
 
 class JPEGImageReader:
-    def __init__(self, directory) -> None:
+    def __init__(self, directory, num_workers) -> None:
         self.directory = directory
+        self.num_workers = num_workers
         manager = multiprocessing.Manager()
         self.images = manager.list()
 
     async def read_images(self, num_images=None) -> None:
         image_files = os.listdir(self.directory)
-        if num_images is not None:
+        if num_images is not None and num_images <= len(image_files):
             image_files = image_files[:num_images]
         loop = asyncio.get_running_loop()
         print("Reading images...")
-        with ProcessPoolExecutor() as pool:
+        with ProcessPoolExecutor(max_workers=self.num_workers) as pool:
             tasks = []
             for filename in image_files:
                 if filename.lower().endswith('.jpg') or filename.lower().endswith('.jpeg'):
@@ -45,7 +47,7 @@ class JPEGImageReader:
         return self.images
 
     def show_images(self, num_images=None) -> None:
-        if num_images is None:
+        if num_images is None or num_images > len(self.images):
             num_images = len(self.images)
         sqrt = math.sqrt(num_images)
         if sqrt.is_integer():
@@ -66,7 +68,7 @@ class JPEGImageReader:
         output_path = os.path.join(path, "image")
         loop = asyncio.get_running_loop()
         print("Saving images...")
-        with ProcessPoolExecutor() as pool:
+        with ProcessPoolExecutor(max_workers=self.num_workers) as pool:
             tasks = []
             for i, image in enumerate(self.images):
                 image_path = output_path + str(i+1) + ".bmp"
@@ -94,7 +96,7 @@ async def main() -> None:
     #logical_core_count = multiprocessing.cpu_count()
     #print("Number of logical cores:", logical_core_count)
     directory_path = os.path.abspath(INPUT_IMAGES_RELATIVE_PATH)
-    reader = JPEGImageReader(directory_path)
+    reader = JPEGImageReader(directory_path, NUM_WORKERS)
     start_time = time.time()
     await reader.read_images(IMAGES_NUMBER)
     execution_time = time.time() - start_time
